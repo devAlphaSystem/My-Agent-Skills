@@ -1,6 +1,6 @@
 # Skills
 
-Reusable agent skills for project mapping, implementation, debugging, code review, testing, and editing prose. Each directory contains a `SKILL.md` file with the skill's trigger, workflow, and rules.
+Reusable agent skills for project mapping, implementation, debugging, code review, testing, delegate model selection, and editing prose. Each directory contains a `SKILL.md` file with the skill's trigger, workflow, and rules.
 
 I use these skills in T3 Code with Codex on the Plus plan and Claude on the Pro plan. Some skills depend on T3 Code's `delegate_task` to coordinate Codex and Claude delegates in the same workflow. T3 Code is required to run those skills as configured in my setup.
 
@@ -15,6 +15,7 @@ I use these skills in T3 Code with Codex on the Plus plan and Claude on the Pro 
 | [debug](debug/SKILL.md)     | Investigate a bug with an unknown cause and test possible explanations.                | Evidence, a confirmed cause or an explicitly unconfirmed hypothesis, and a brief for squad. |
 | [qa](qa/SKILL.md)           | Run automated and exploratory testing, send confirmed problems to a fixer, and retest. | A report of test results, fixes, limitations, and follow-ups.                               |
 | [council](council/SKILL.md) | Get independent feedback from two delegates and review again after accepted fixes.     | Review findings and, for code reviews, scores for each round.                               |
+| [pickmodel](pickmodel/SKILL.md) | Choose the model for every delegate when used with a delegation workflow.           | User-selected models with `xhigh` effort, reported by role.                                 |
 
 ### Third-party skills
 
@@ -40,15 +41,17 @@ debug why saving the settings form fails with an empty optional field.
 qa the settings form changes, including invalid inputs and error states.
 
 council review the settings form changes for correctness and maintainability.
+
+pickmodel squad add input validation to the settings form using the existing patterns.
 ```
 
 Invoke `unslop` explicitly through your host's skill mechanism and provide the text to edit. Its metadata sets `disable-model-invocation: true`.
 
-Skills run as separate requests. `debug` produces a brief for squad but does not implement a fix or start squad. `onboard` and `qa` also require an explicit request.
+Workflow skills run as separate requests. `debug` produces a brief for squad but does not implement a fix or start squad. `onboard` and `qa` also require an explicit request. Use `pickmodel` together with `onboard`, `squad`, `debug`, `qa`, or `council` in the same request to choose delegate models.
 
 ## Models and orchestration
 
-The five delegation workflows require these exact models, all with `xhigh` reasoning effort:
+By default, the five delegation workflows require these exact models, all with `xhigh` reasoning effort:
 
 | Skill   | Roles and models                                                                              |
 | ------- | --------------------------------------------------------------------------------------------- |
@@ -58,7 +61,11 @@ The five delegation workflows require these exact models, all with `xhigh` reaso
 | qa      | Automated tester: GPT 6.1 Sol. Exploratory tester: Claude Sonnet 5.5. Fixer: Claude Opus 5.5. |
 | council | Exactly two delegates: Claude Sonnet 5.5 and GPT 6.1 Sol.                                     |
 
-These are required model selections, not suggested alternatives. If a required model or reasoning level is unavailable, report the limitation instead of substituting another model.
+These model assignments are required unless `pickmodel` is invoked. Without `pickmodel`, if a required model or reasoning level is unavailable, report the limitation instead of substituting another model.
+
+With `pickmodel`, the user chooses each delegate's model through a selectable-options tool before it starts. The only allowed models are Claude Opus 5.5, Claude Sonnet 5.5, and GPT 6.1 Sol, always with `xhigh` effort. The workflow's assigned model becomes the recommended option when it is allowed and available. Unavailable models are excluded; if none are available, the workflow stops.
+
+Every new delegate requires a fresh answer, including later review rounds and replacements. All choices for a parallel group must be collected before any delegate in that group starts. Async questions require an actual user response. Pickmodel overrides model assignments only; roles, prompts, delegate counts, workflow, scope, and permissions remain unchanged. The final report includes each delegate's role, model, and effort.
 
 In T3 Code, the skills use `orchestrator_capabilities` to resolve the models and `delegate_task` to start delegates. Using them in another host requires equivalent delegation support for the required models. `unslop` does not define delegate roles or fixed model requirements.
 
@@ -67,6 +74,8 @@ In T3 Code, the skills use `orchestrator_capabilities` to resolve the models and
 Use `onboard` when a project needs a shared map in `PROJECT.md`. Use `squad` when the requested change is ready for research, planning, and implementation. If a bug's cause is unknown, start with `debug`, then pass its findings to squad in a separate request.
 
 After implementation, request `qa` to exercise the changed behavior or `council` for review and feedback. Use `unslop` when editing documentation or other prose.
+
+Add `pickmodel` to a delegation workflow when you want to select the model for each delegate.
 
 ## Scope and permissions
 

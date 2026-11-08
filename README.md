@@ -1,6 +1,6 @@
 # Skills
 
-Reusable agent skills for project mapping, implementation, debugging, code review, testing, delegate model selection, and editing prose. Each directory contains a `SKILL.md` file with the skill's trigger, workflow, and rules.
+Reusable agent skills for project mapping, implementation, debugging, code review, testing, delegate model selection, shell command logging, and editing prose. Each directory contains a `SKILL.md` file with the skill's trigger, workflow, and rules.
 
 I use these skills in T3 Code with Codex on the Plus plan and Claude on the Pro plan. Some skills depend on T3 Code's `delegate_task` to coordinate Codex and Claude delegates in the same workflow. T3 Code is required to run those skills as configured in my setup.
 
@@ -8,15 +8,16 @@ I use these skills in T3 Code with Codex on the Plus plan and Claude on the Pro 
 
 ### Original skills - T3 Code
 
-| Skill                           | Purpose                                                                                | Result                                                                                      |
-| ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| [onboard](onboard/SKILL.md)     | Map a project's structure, stack, commands, and conventions, then verify the findings. | A `PROJECT.md` file at the workspace root.                                                  |
-| [squad](squad/SKILL.md)         | Research, plan, and implement a requested change through delegates with fixed roles.   | Workspace changes and a verification report.                                                |
-| [debug](debug/SKILL.md)         | Investigate a bug with an unknown cause and test possible explanations.                | Evidence, a confirmed cause or an explicitly unconfirmed hypothesis, and a brief for squad. |
-| [qa](qa/SKILL.md)               | Run automated and exploratory testing, send confirmed problems to a fixer, and retest. | A report of test results, fixes, limitations, and follow-ups.                               |
-| [council](council/SKILL.md)     | Get independent feedback from two delegates and review again after accepted fixes.     | Review findings and, for code reviews, scores for each round.                               |
-| [pickmodel](pickmodel/SKILL.md) | Choose the model for every delegate when used with a delegation workflow.              | User-selected models with `xhigh` effort, reported by role.                                 |
-| [pragmatic](pragmatic/SKILL.md) | Keep effort proportional to practical benefit and defect risk.                         | Useful improvements and disclosed minor issues without disproportionate investigation.      |
+| Skill                             | Purpose                                                                                | Result                                                                                      |
+| --------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| [onboard](onboard/SKILL.md)       | Map a project's structure, stack, commands, and conventions, then verify the findings. | A `PROJECT.md` file at the workspace root.                                                  |
+| [squad](squad/SKILL.md)           | Research, plan, and implement a requested change through delegates with fixed roles.   | Workspace changes and a verification report.                                                |
+| [debug](debug/SKILL.md)           | Investigate a bug with an unknown cause and test possible explanations.                | Evidence, a confirmed cause or an explicitly unconfirmed hypothesis, and a brief for squad. |
+| [qa](qa/SKILL.md)                 | Run automated and exploratory testing, send confirmed problems to a fixer, and retest. | A report of test results, fixes, limitations, and follow-ups.                               |
+| [council](council/SKILL.md)       | Get independent feedback from two delegates and review again after accepted fixes.     | Review findings and, for code reviews, scores for each round.                               |
+| [pickmodel](pickmodel/SKILL.md)   | Choose the model for every delegate when used with a delegation workflow.              | User-selected models with `xhigh` effort, reported by role.                                 |
+| [pragmatic](pragmatic/SKILL.md)   | Keep effort proportional to practical benefit and defect risk.                         | Useful improvements and disclosed minor issues without disproportionate investigation.      |
+| [commandlog](commandlog/SKILL.md) | Record every shell command each agent runs, with its expected outcome and reason.      | A `commands.json` file in `CommandLogs` on the Desktop, grouped by workspace.               |
 
 ### Third-party skills
 
@@ -50,11 +51,15 @@ pragmatic squad improve the settings form using the existing patterns.
 pragmatic council review the changes and keep effort proportional to practical impact.
 
 pragmatic qa test the changes and defer rare, low-impact defects that need disproportionate effort.
+
+commandlog squad add input validation to the settings form using the existing patterns.
+
+commandlog debug why saving the settings form fails with an empty optional field.
 ```
 
 Invoke `unslop` explicitly through your host's skill mechanism and provide the text to edit. Its metadata sets `disable-model-invocation: true`.
 
-Workflow skills run as separate requests. `debug` produces a brief for squad but does not implement a fix or start squad. `onboard` and `qa` also require an explicit request. Use `pickmodel` together with `onboard`, `squad`, `debug`, `qa`, or `council` in the same request to choose delegate models.
+Workflow skills run as separate requests. `debug` produces a brief for squad but does not implement a fix or start squad. `onboard` and `qa` also require an explicit request. Use `pickmodel` together with `onboard`, `squad`, `debug`, `qa`, or `council` in the same request to choose delegate models. Use `commandlog` together with any of them, or with an ordinary task that runs shell commands, to log those commands.
 
 ## Models and orchestration
 
@@ -86,10 +91,22 @@ Add `pickmodel` to a delegation workflow when you want to select the model for e
 
 Add `pragmatic` to keep investigation, fixes, and optimization proportional to practical impact. Clear, low-cost improvements remain required. It overrides optional performance work and permits deferring rare, minor defects when a proper fix would take disproportionate effort. It also avoids speculative scale and unsupported compatibility work, and permits deferring rare, minor defects when a fix would put common flows at greater risk. Documented capacity and support commitments still apply. Known issues and failed checks remain visible. Rarity does not excuse security problems, destructive consequences, or unmet explicit requirements. Hours of work or hundreds of thousands of tokens for an expected gain of 1% to 5% require an explicit request for that depth of optimization. It starts no delegates and can also guide work without another skill.
 
+Add `commandlog` to keep an audit trail of shell commands. It changes no roles, models, workflow, or scope of the other skill, and it does not review, block, or approve commands. It starts no delegates.
+
+## Command log
+
+With `commandlog`, every agent, including the coordinator and all delegates, saves an entry before it runs each shell command. Non-shell tool calls and calls to the logging helper are not recorded. If an entry cannot be saved, the command does not run.
+
+- **Location:** `<Desktop>\CommandLogs\<workspace folder name>\commands.json`, where `<Desktop>` comes from PowerShell's `GetFolderPath('Desktop')`. Setting `COMMANDLOG_ROOT` replaces the log root.
+- **Format:** one JSON array of entries with exactly four fields: `timestamp` (set by the helper), `command`, `expectedOutcome`, and `reason`. Agents write the last two as one short English sentence each.
+- **Helper:** the coordinator creates `log_command.ps1` in the log root. It uses a named mutex and an atomic file replace, so parallel delegates can append to the same file safely. Entries are only appended, never edited, reordered, or deleted.
+- **Secrets:** tokens, passwords, and API keys inside a command are replaced with `<redacted>`.
+- **Final report:** states the log file path, the number of entries recorded in the run, and any command that could not be recorded.
+
 ## Scope and permissions
 
 Each skill defines its own role boundaries. Researchers, reviewers, and testers generally keep source files unchanged. Squad assigns source edits to its implementer; QA assigns fixes to its fixer. Onboard writes only `PROJECT.md`, and debug keeps experiments outside the source tree.
 
-The delegation skills restrict Git to read-only status, diff, show, and log operations. Their files specify the permitted options. They also restrict destructive operations, production writes, publishing, and dependency changes. Project and session instructions may impose stricter limits on commands, servers, or file changes.
+The delegation skills restrict Git to read-only status, diff, show, and log operations. Their files specify the permitted options. They also restrict destructive operations, production writes, publishing, and dependency changes. Project and session instructions may impose stricter limits on commands, servers, or file changes. When `commandlog` is active, agents may also write inside the log root, which is the only exception to these file rules.
 
 Read the relevant `SKILL.md` before invoking a skill for its complete permissions, stopping conditions, and report format.

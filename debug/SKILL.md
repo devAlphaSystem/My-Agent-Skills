@@ -13,14 +13,14 @@ The coordinator is the agent in the conversation. It talks to the user, briefs e
 
 Use these exact models with xhigh reasoning effort:
 
-| Role         | Model                   |
-| ------------ | ----------------------- |
-| Investigator | GPT 6.1 Sol xhigh       |
-| Analyst      | Claude Sonnet 5.5 xhigh |
+| Role         | Model                 |
+| ------------ | --------------------- |
+| Investigator | GPT 6.1 Sol xhigh     |
+| Analyst      | Claude Opus 5.5 xhigh |
 
-Do not add, replace, or substitute models, even if the user suggests others. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
 
-In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their xhigh reasoning effort, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
+In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
 ## Workflow
 

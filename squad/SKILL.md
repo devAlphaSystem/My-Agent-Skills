@@ -11,17 +11,27 @@ Use this skill when the user asks for a fix, addition, change, or removal in the
 
 The coordinator is the agent in the conversation. It talks to the user, briefs each delegate, passes results between them, and reports back. The coordinator does not research, plan, or implement on its own, except for small clarifications needed to write a brief.
 
-Use these exact models with xhigh reasoning effort:
+Use these exact models and reasoning efforts:
 
-| Role        | Model                   |
-| ----------- | ----------------------- |
-| Researcher  | GPT 6.1 Sol xhigh       |
-| Planner     | Claude Sonnet 5.5 xhigh |
-| Implementer | Claude Opus 5.5 xhigh   |
+| Role        | Model                                                                       |
+| ----------- | --------------------------------------------------------------------------- |
+| Researcher  | GPT 6.1 Sol xhigh                                                           |
+| Planner     | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks |
+| Implementer | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks |
 
-Do not add, replace, or substitute models, even if the user suggests others. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+A task is high complexity when at least one of these applies:
 
-In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their xhigh reasoning effort, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
+- The request is open-ended, or it needs design decisions that the research did not settle.
+- The change spans several modules or layers, such as a migration or a codebase-wide change.
+- A mistake would be costly or hard to undo, such as a change to auth, security, payments, or stored data and its schema.
+
+Otherwise, it is normal complexity.
+
+After the research, the coordinator rates the task with these criteria and starts the planner on Claude Opus 5.5 xhigh for high complexity, and on Claude Sonnet 5.5 xhigh otherwise. The planner rates the implementation with the same criteria (see the plan contents below). The coordinator starts the implementer on Claude Opus 5.5 xhigh when either rating is high complexity, and on Claude Sonnet 5.5 xhigh otherwise. These are the only model choices the coordinator makes, and the final report states each model used and why.
+
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+
+In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
 ## Workflow
 
@@ -61,6 +71,7 @@ Each planner must return a plan that covers:
 - Security impact, including input validation, auth, secrets, and data exposure
 - UI and UX impact when the change is user-facing, including accessibility and responsive behavior
 - Simplicity and maintainability tradeoffs
+- Implementation complexity, rated normal or high with the criteria under Roles, and the reason
 - Edge cases and failure modes
 - How to verify the change, with the exact checks and commands to run
 
@@ -83,6 +94,7 @@ If a check fails, the implementer fixes it and runs the check again. If the fix 
 The coordinator sends the user a final reply with:
 
 - What changed and where
+- Which models planned and implemented the change and why
 - Which approaches the planners compared and why the chosen one won
 - Verification results
 - Deviations from the plan

@@ -11,17 +11,26 @@ Use this skill to test changes in the workspace. It runs only when the user asks
 
 The coordinator is the agent in the conversation. It briefs each delegate, filters and passes findings between them, and reports to the user. The coordinator does not test or fix code on its own.
 
-Use these exact models with xhigh reasoning effort:
+Use these exact models and reasoning efforts:
 
-| Role               | Model                   |
-| ------------------ | ----------------------- |
-| Automated tester   | GPT 6.1 Sol xhigh       |
-| Exploratory tester | Claude Sonnet 5.5 xhigh |
-| Fixer              | Claude Opus 5.5 xhigh   |
+| Role               | Model                                                                          |
+| ------------------ | ------------------------------------------------------------------------------ |
+| Automated tester   | GPT 6.1 Sol xhigh                                                              |
+| Exploratory tester | Claude Sonnet 5.5 xhigh                                                        |
+| Fixer              | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity problems |
 
-Do not add, replace, or substitute models, even if the user suggests others. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+A problem is high complexity when at least one of these applies:
 
-In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their xhigh reasoning effort, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
+- Its root cause is not clear from the findings and the reproduction steps.
+- The fix spans several modules or layers.
+- A mistake would be costly or hard to undo, such as a change to auth, security, payments, or stored data.
+- An earlier fix for the same problem failed a retest.
+
+The coordinator starts the fixer on Claude Opus 5.5 xhigh for high complexity problems, and on Claude Sonnet 5.5 xhigh otherwise. This is the only model choice the coordinator makes. The final report states the model used for each fixer and why.
+
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+
+In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
 ## Brief
 
@@ -112,4 +121,4 @@ Include the QA results in the final reply, using this format:
 | GPT 6.1 Sol xhigh       | fail (2 major)   | pass    |
 | Claude Sonnet 5.5 xhigh | fail (1 blocker) | pass    |
 
-Adjust the rounds and columns to match the actual runs. After the table, list the problems fixed, the problems dropped and why, what could not be tested, and the follow-ups.
+Adjust the rounds and columns to match the actual runs. After the table, list the fixer model used for each fix and why, the problems fixed, the problems dropped and why, what could not be tested, and the follow-ups.

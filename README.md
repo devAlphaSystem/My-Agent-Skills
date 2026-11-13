@@ -15,7 +15,7 @@ I use these skills in T3 Code with Codex on the Plus plan and Claude on the Pro 
 | [debug](debug/SKILL.md)           | Investigate a bug with an unknown cause and test possible explanations.                | Evidence, a confirmed cause or an explicitly unconfirmed hypothesis, and a brief for squad. |
 | [qa](qa/SKILL.md)                 | Run automated and exploratory testing, send confirmed problems to a fixer, and retest. | A report of test results, fixes, limitations, and follow-ups.                               |
 | [council](council/SKILL.md)       | Get independent feedback from two delegates and review again after accepted fixes.     | Review findings and, for code reviews, scores for each round.                               |
-| [pickmodel](pickmodel/SKILL.md)   | Choose the model for every delegate when used with a delegation workflow.              | User-selected models with `xhigh` effort, reported by role.                                 |
+| [pickmodel](pickmodel/SKILL.md)   | Choose the model for every delegate when used with a delegation workflow.              | User-selected models and efforts, reported by role.                                         |
 | [pragmatic](pragmatic/SKILL.md)   | Keep effort proportional to practical benefit and defect risk.                         | Useful improvements and disclosed minor issues without disproportionate investigation.      |
 | [commandlog](commandlog/SKILL.md) | Record every shell command each agent runs, with its expected outcome and reason.      | A `commands.json` file in `CommandLogs` on the Desktop, grouped by workspace.               |
 
@@ -63,19 +63,33 @@ Workflow skills run as separate requests. `debug` produces a brief for squad but
 
 ## Models and orchestration
 
-By default, the five delegation workflows require these exact models, all with `xhigh` reasoning effort:
+Only these models and efforts are allowed:
 
-| Skill   | Roles and models                                                                              |
-| ------- | --------------------------------------------------------------------------------------------- |
-| onboard | Mapper: GPT 6.1 Sol. Verifier: Claude Sonnet 5.5.                                             |
-| squad   | Researcher: GPT 6.1 Sol. Planner: Claude Sonnet 5.5. Implementer: Claude Opus 5.5.            |
-| debug   | Investigator: GPT 6.1 Sol. Analyst: Claude Sonnet 5.5.                                        |
-| qa      | Automated tester: GPT 6.1 Sol. Exploratory tester: Claude Sonnet 5.5. Fixer: Claude Opus 5.5. |
-| council | Exactly two delegates: Claude Sonnet 5.5 and GPT 6.1 Sol.                                     |
+| Model             | Effort            | Used for                                                                                                                                                                                                                                                                                                                                                                                                                                       | Edits code     |
+| ----------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Claude Opus 5.5   | `xhigh`           | The most capable model, and the strongest at open-ended work that needs sustained judgment. The right choice for heavier problems, such as debugging, and planning and implementing high complexity tasks.                                                                                                                                                                                                                                     | Yes            |
+| Claude Sonnet 5.5 | `xhigh`           | Creates and edits code intelligently. Better at code than GPT 6.1 Sol, so it edits code by default, mostly for new code of medium to high complexity.                                                                                                                                                                                                                                                                                          | Yes            |
+| Claude Sonnet 5.5 | `high`            | The best middle ground between cost and speed. Default for talking directly with the user, explanations, quick code fixes, and checking other models' work.                                                                                                                                                                                                                                                                                    | Yes            |
+| Claude Haiku 5.5  | `high`            | Very fast and very cheap, good at reading many files quickly. Much weaker than GPT 6.1 Sol and Sonnet 5.5, and hallucinates more than other recent Anthropic models, so it is never the only check on another model's work. Narrow read-only tasks only: objective evaluations, such as running a command and recording the result, summaries, and light information lookups, including internet searches. Any agent can start it at any time. | Never          |
+| GPT 6.1 Sol       | `high` or `xhigh` | Main information aggregator. Strong at creating and editing code, but Sonnet 5.5 is better, so it does not edit by default. Studies the code more, so its opinion matters in council and squad. Runs tests too. Workflows use `xhigh` by default; `high` applies when the user chooses it.                                                                                                                                                     | Not by default |
+
+By default, the five delegation workflows require these exact models:
+
+| Skill   | Roles and models                                                                                                                                                                                                                                     |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| onboard | Mapper: GPT 6.1 Sol xhigh. Verifier: Claude Sonnet 5.5 high.                                                                                                                                                                                         |
+| squad   | Researcher: GPT 6.1 Sol xhigh. Planner: Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks. Implementer: Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh when the coordinator or the plan rates the task high complexity. |
+| debug   | Investigator: GPT 6.1 Sol xhigh. Analyst: Claude Opus 5.5 xhigh.                                                                                                                                                                                     |
+| qa      | Automated tester: GPT 6.1 Sol xhigh. Exploratory tester: Claude Sonnet 5.5 xhigh. Fixer: Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity problems.                                                                             |
+| council | Exactly two delegates: Claude Sonnet 5.5 xhigh and GPT 6.1 Sol xhigh.                                                                                                                                                                                |
+
+The squad and qa files define the objective criteria for high complexity, such as open-ended requests, changes across several modules, and costly or hard to undo mistakes.
+
+Any agent, including the coordinator and the delegates, can start Claude Haiku 5.5 high at any time for light information lookups, including internet searches. This needs no permission, is not a delegate role, does not count toward council's two delegates, and needs no `pickmodel` question. Haiku stays read-only. It returns a link for each source, and the agent that started it checks the source before relying on the result.
 
 These model assignments are required unless `pickmodel` is invoked. Without `pickmodel`, if a required model or reasoning level is unavailable, report the limitation instead of substituting another model.
 
-With `pickmodel`, the user chooses each delegate's model through a selectable-options tool before it starts. The only allowed models are Claude Opus 5.5, Claude Sonnet 5.5, and GPT 6.1 Sol, always with `xhigh` effort. The workflow's assigned model becomes the recommended option when it is allowed and available. Unavailable models are excluded; if none are available, the workflow stops.
+With `pickmodel`, the user chooses each delegate's model through a selectable-options tool before it starts, then chooses the effort when the model allows more than one (Claude Sonnet 5.5 and GPT 6.1 Sol, high or xhigh). Claude Haiku 5.5 is not offered for roles that edit source files. GPT 6.1 Sol is offered for them but is never the recommended option. The workflow's assigned model and effort become the recommended options when they are allowed and available. Unavailable models are excluded; if none are available, the workflow stops.
 
 Every new delegate requires a fresh answer, including later review rounds and replacements. All choices for a parallel group must be collected before any delegate in that group starts. Async questions require an actual user response. Pickmodel overrides model assignments only; roles, prompts, delegate counts, workflow, scope, and permissions remain unchanged. The final report includes each delegate's role, model, and effort.
 

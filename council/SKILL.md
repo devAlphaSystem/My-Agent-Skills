@@ -10,7 +10,7 @@ Before an audit, fix known issues and run relevant checks without using Git. Giv
 Bring in exactly two delegates to help with the user's request, usually for review or feedback. Always use these exact models with xhigh reasoning effort:
 
 - Claude Sonnet 5.5 xhigh
-- GPT 6.1 Sol xhigh
+- GPT 6.2 Sol xhigh
 
 Do not add, replace, or substitute models, even if the user suggests other council members. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a council member and does not count toward the two delegates. It returns a link for each source, and the agent that started it checks the source before relying on the result. If either required model or reasoning level is unavailable, report the limitation rather than substituting.
 
@@ -83,7 +83,7 @@ Rounds: 2
 | Delegate                | Round 1 | Round 2 |
 | ----------------------- | ------- | ------- |
 | Claude Sonnet 5.5 xhigh | 7/10    | 9/10    |
-| GPT 6.1 Sol xhigh       | 8/10    | 10/10   |
+| GPT 6.2 Sol xhigh       | 8/10    | 10/10   |
 ```
 
 Adjust the rounds, scores, and table columns to match the actual reviews. If a delegate gives no score, write `no score`. Do not invent one.

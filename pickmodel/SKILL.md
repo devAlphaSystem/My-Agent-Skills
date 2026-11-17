@@ -16,11 +16,11 @@ Only these models are allowed, each with the reasoning effort shown:
 | Claude Opus 5.5   | xhigh          | Yes                                        |
 | Claude Sonnet 5.5 | high or xhigh  | Yes                                        |
 | Claude Haiku 5.5  | high           | Never                                      |
-| GPT 6.1 Sol       | high or xhigh  | Only when the user chooses it for the role |
+| GPT 6.2 Sol       | high or xhigh  | Only when the user chooses it for the role |
 
 Do not offer, accept, or start any other model or reasoning effort, even if the other skill names one or the user suggests one.
 
-Claude Haiku 5.5 never edits project files. Do not offer it for a role that edits source files, such as the implementer in squad or the fixer in qa. Offer it only for read-only roles. GPT 6.1 Sol is strong at writing and editing code, but Claude Sonnet 5.5 is better, so no workflow assigns code edits to it. It is offered for roles that edit source files only because the user makes the choice, and it is never the recommended option for them. GPT 6.1 Sol may also create and run tests that do not change project source files.
+Claude Haiku 5.5 never edits project files. Do not offer it for a role that edits source files, such as the implementer in squad or the fixer in qa. Offer it only for read-only roles. GPT 6.2 Sol is strong at writing and editing code, but Claude Sonnet 5.5 is better, so no workflow assigns code edits to it. It is offered for roles that edit source files only because the user makes the choice, and it is never the recommended option for them. GPT 6.2 Sol may also create and run tests that do not change project source files.
 
 ## Override
 
@@ -30,7 +30,7 @@ Everything else in the other skill still applies, including roles, workflow, per
 
 ## Rule
 
-Before every delegate starts, ask the user which model to use and, for Claude Sonnet 5.5 and GPT 6.1 Sol, which effort. This applies to every new delegate, with no exceptions:
+Before every delegate starts, ask the user which model to use and, for Claude Sonnet 5.5 and GPT 6.2 Sol, which effort. This applies to every new delegate, with no exceptions:
 
 - The first delegate and every later one.
 - Each delegate in a parallel group.
@@ -66,11 +66,11 @@ If no working selectable-options tool remains, stop and explain which tools are 
    - Claude Opus 5.5 (xhigh)
    - Claude Sonnet 5.5 (high or xhigh)
    - Claude Haiku 5.5 (high)
-   - GPT 6.1 Sol (high or xhigh)
+   - GPT 6.2 Sol (high or xhigh)
 
-   For a role that edits source files, offer only Claude Opus 5.5, Claude Sonnet 5.5, and GPT 6.1 Sol, and never mark GPT 6.1 Sol as recommended. Add "(Recommended)" to the label of the option that the other skill names for that role, if any, and list it first. Do not add any other option. If the tool adds an "Other" option on its own, treat it as unsupported (see below). If the tool accepts only option strings, keep the model labels as those strings and put their short descriptions in the question text.
+   For a role that edits source files, offer only Claude Opus 5.5, Claude Sonnet 5.5, and GPT 6.2 Sol, and never mark GPT 6.2 Sol as recommended. Add "(Recommended)" to the label of the option that the other skill names for that role, if any, and list it first. Do not add any other option. If the tool adds an "Other" option on its own, treat it as unsupported (see below). If the tool accepts only option strings, keep the model labels as those strings and put their short descriptions in the question text.
 
-5. Ask the effort question only for delegates whose model answer was Claude Sonnet 5.5 or GPT 6.1 Sol, in a second call after the model answers. Offer high and xhigh, with "(Recommended)" on the effort the other skill names for that role, if any. Claude Opus 5.5 (xhigh) and Claude Haiku 5.5 (high) have a single allowed effort, so do not ask about it. Collect a valid model answer, and an effort answer where one is needed, for every delegate in the group before starting any of them, including with async questions.
+5. Ask the effort question only for delegates whose model answer was Claude Sonnet 5.5 or GPT 6.2 Sol, in a second call after the model answers. Offer high and xhigh, with "(Recommended)" on the effort the other skill names for that role, if any. Claude Opus 5.5 (xhigh) and Claude Haiku 5.5 (high) have a single allowed effort, so do not ask about it. Collect a valid model answer, and an effort answer where one is needed, for every delegate in the group before starting any of them, including with async questions.
 6. After receiving and validating the answers, start each delegate with `delegate_task`. Map each choice to the exact provider instance and model ID resolved in step 1, and explicitly set that provider's effort option to the chosen effort in `target.options`. Do not change, upgrade, or downgrade the selection.
 7. Report the choices in the final reply, as a table of role, model, and effort. Include delegates started in later rounds.
 

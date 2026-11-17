@@ -15,7 +15,7 @@ Use these exact models and reasoning efforts:
 
 | Role        | Model                                                                       |
 | ----------- | --------------------------------------------------------------------------- |
-| Researcher  | GPT 6.1 Sol xhigh                                                           |
+| Researcher  | GPT 6.2 Sol xhigh                                                           |
 | Planner     | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks |
 | Implementer | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks |
 

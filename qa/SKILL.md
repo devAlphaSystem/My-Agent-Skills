@@ -15,7 +15,7 @@ Use these exact models and reasoning efforts:
 
 | Role               | Model                                                                          |
 | ------------------ | ------------------------------------------------------------------------------ |
-| Automated tester   | GPT 6.1 Sol xhigh                                                              |
+| Automated tester   | GPT 6.2 Sol xhigh                                                              |
 | Exploratory tester | Claude Sonnet 5.5 xhigh                                                        |
 | Fixer              | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity problems |
 
@@ -118,7 +118,7 @@ Include the QA results in the final reply, using this format:
 
 | Delegate                | Round 1          | Round 2 |
 | ----------------------- | ---------------- | ------- |
-| GPT 6.1 Sol xhigh       | fail (2 major)   | pass    |
+| GPT 6.2 Sol xhigh       | fail (2 major)   | pass    |
 | Claude Sonnet 5.5 xhigh | fail (1 blocker) | pass    |
 
 Adjust the rounds and columns to match the actual runs. After the table, list the fixer model used for each fix and why, the problems fixed, the problems dropped and why, what could not be tested, and the follow-ups.

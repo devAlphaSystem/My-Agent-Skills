@@ -15,7 +15,7 @@ Use these exact models and reasoning efforts:
 
 | Role     | Model                  |
 | -------- | ---------------------- |
-| Mapper   | GPT 6.1 Sol xhigh      |
+| Mapper   | GPT 6.2 Sol xhigh      |
 | Verifier | Claude Sonnet 5.5 high |
 
 Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.

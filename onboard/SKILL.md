@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: Trigger this if the user says 'onboard'.
+description: Map a project's stack, commands, structure, and conventions through a mapper and a verifier delegate, check that the commands work, and save the result in PROJECT.md at the workspace root for other skills to read. Run once per project and again after large changes. Use only when the user says 'onboard'.
 ---
 
 # Onboard

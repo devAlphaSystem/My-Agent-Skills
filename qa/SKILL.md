@@ -1,6 +1,6 @@
 ---
 name: qa
-description: Trigger this if the user says 'qa'.
+description: Test changes in the workspace with an automated tester and an exploratory tester, send confirmed blocker and major problems to a fixer, and retest until both testers pass or five rounds end. Usually follows a squad run. Use only when the user says 'qa'.
 ---
 
 # QA

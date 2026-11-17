@@ -1,6 +1,6 @@
 ---
 name: pragmatic
-description: Keep software investigation, fixes, and optimization proportional to practical impact. Use when marginal gains, rare defects, speculative scale or compatibility, or risky fixes cause disproportionate effort.
+description: Keep software investigation, fixes, and optimization proportional to practical impact. Use when marginal gains, rare defects, speculative scale or compatibility, or risky fixes cause disproportionate effort. Also use when the user says 'pragmatic', alone or alongside squad, council, qa, or debug.
 ---
 
 # Pragmatic

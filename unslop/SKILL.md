@@ -1,7 +1,6 @@
 ---
 name: unslop
-description: Cut AI tells from any writing.
-disable-model-invocation: true
+description: Edit text to remove common AI writing patterns, such as AI vocabulary, filler phrases, chatbot phrases, em dashes, and mannered prose, while preserving meaning and tone. Use when the user says 'unslop' or asks to make writing sound less AI-generated, or when another skill, such as onboard, requires text to follow the unslop rules.
 ---
 
 # Unslop
@@ -15,7 +14,7 @@ Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
 ### Content
 
 3. **Superficial -ing phrases.** "highlighting...", "ensuring...", "reflecting...", "showcasing...", "fostering...". Delete or expand with real sources.
-5. **Vague attributions.** "Experts believe", "Industry reports suggest", "Some critics argue". Name the source or delete.
+4. **Vague attributions.** "Experts believe", "Industry reports suggest", "Some critics argue". Name the source or delete.
 
 ### Language
 
@@ -39,7 +38,7 @@ Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
 ### Communication artifacts
 
 20. **Chatbot phrases.** "I hope this helps!", "Let me know if...", "Of course!", "Certainly!", "Found the smoking gun!" Remove.
-22. **Sycophantic tone.** "Great question! You're absolutely right!" Respond directly.
+21. **Sycophantic tone.** "Great question! You're absolutely right!" Respond directly.
 
 ### Filler
 

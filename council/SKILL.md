@@ -1,6 +1,6 @@
 ---
 name: council
-description: Trigger this if the user says 'council'.
+description: Get independent feedback or a code review from exactly two delegates, apply the accepted recommendations, and re-review until both are satisfied. Code reviews get a score out of 10 from each delegate per round. Use only when the user says 'council'.
 ---
 
 # Council

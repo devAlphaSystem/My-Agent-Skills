@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Trigger this if the user says 'debug'.
+description: Investigate a bug with an unknown cause through an investigator and an analyst delegate, confirm the root cause, and write a ready-to-paste brief for squad. It does not fix the bug or start squad. Use only when the user says 'debug'.
 ---
 
 # Debug

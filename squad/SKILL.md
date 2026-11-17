@@ -1,6 +1,6 @@
 ---
 name: squad
-description: Trigger this if the user says 'squad'.
+description: Carry out a requested fix, addition, change, or removal in the workspace through a researcher, a planner, and an implementer delegate, then report what changed and how it was verified. Use only when the user says 'squad'.
 ---
 
 # Squad

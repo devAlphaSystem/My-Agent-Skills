@@ -1,6 +1,6 @@
 ---
 name: pickmodel
-description: Trigger this if the user says 'pickmodel'.
+description: Let the user choose the model and reasoning effort of every delegate before it starts, overriding the fixed models of the other skill. Always combine it with a delegation skill such as council, squad, debug, onboard, or qa. Use only when the user says 'pickmodel'.
 ---
 
 # Pickmodel

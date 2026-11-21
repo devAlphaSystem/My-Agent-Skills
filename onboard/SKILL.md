@@ -35,7 +35,7 @@ Brief the mapper with the workspace path and the projects to map. The mapper rea
 The mapper must return:
 
 - The project type, languages, frameworks, and their versions
-- The package manager and runtime versions, such as Node, Python, or Java
+- The package manager and runtime versions, such as the language runtime and the build tool
 - Commands to install, build, run, test, lint, type check, and format, taken from scripts, Makefiles, and config files
 - The folder structure, with one line on what each main folder holds
 - Entry points, such as the main file, routes, CLI commands, or API endpoints

@@ -40,7 +40,7 @@ Delegates may do the following when it helps the audit:
   - Starting local dev servers, emulators, simulators, or the app itself
   - Running CLIs or scripts with safe sample inputs
   - Reading logs, listing files, and inspecting dependencies
-  - Read-only diagnostics, profiling, and audit tools such as Lighthouse, accessibility checkers, and `npm audit`
+  - Read-only diagnostics, profiling, and audit tools such as Lighthouse, accessibility checkers, and dependency audit commands
 
 Delegates must not run destructive or side-effecting commands, including:
 

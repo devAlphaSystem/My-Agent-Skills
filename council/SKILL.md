@@ -5,16 +5,38 @@ description: Get independent feedback or a code review from exactly two delegate
 
 # Council
 
-Before an audit, fix known issues and run relevant checks without using Git. Give council the updated implementation; do not defer known fixes until reviews return. If the user wants to discard the implementation and explore new ideas, skip fixes to code being replaced.
+Before an audit, have known issues fixed and run relevant checks without using Git. Give council the updated implementation; do not defer known fixes until reviews return. If the user wants to discard the implementation and explore new ideas, skip fixes to code being replaced.
+
+The coordinator is the agent in the conversation. It briefs the delegates, collects and filters their findings, and reports to the user. It never creates or edits code, however small the change: no one-line fix, configuration value, script, or test. It orchestrates, guides, and briefs. Every code change goes to an implementer delegate, as described under "Code changes".
 
 Bring in exactly two delegates to help with the user's request, usually for review or feedback. Always use these exact models with xhigh reasoning effort:
 
 - Claude Sonnet 5.5 xhigh
 - GPT 6.2 Sol xhigh
 
-Do not add, replace, or substitute models, even if the user suggests other council members. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a council member and does not count toward the two delegates. It returns a link for each source, and the agent that started it checks the source before relying on the result. If either required model or reasoning level is unavailable, report the limitation rather than substituting.
+Do not add, replace, or substitute models, even if the user suggests other council members. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a council member and does not count toward the two delegates. It returns a link for each source, and the agent that started it checks the source before relying on the result. If either required model or reasoning level is unavailable, report the limitation rather than substituting. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that council member on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. Both members then run on the same model, so the report also says the review lost the second model's view. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the two exact models and their xhigh reasoning effort, then `delegate_task` to start both delegates in parallel. Elsewhere, use the harness's subagent tools.
+
+## Code changes
+
+Known issues found before an audit and the recommendations the coordinator accepts are carried out by one implementer delegate. The implementer is not a council member and does not count toward the two delegates. The council members stay read-only with respect to source files.
+
+Use these exact models and reasoning efforts:
+
+| Role        | Model                                                                       |
+| ----------- | --------------------------------------------------------------------------- |
+| Implementer | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks |
+
+A task is high complexity when at least one of these applies:
+
+- The change needs design decisions that the request or the findings did not settle.
+- The change spans several modules or layers, such as a migration or a codebase-wide change.
+- A mistake would be costly or hard to undo, such as a change to auth, security, payments, or stored data and its schema.
+
+Otherwise, it is normal complexity. The same rules apply as for the council members: no other models, resolve them with `orchestrator_capabilities` and start the implementer with `delegate_task` in T3 Code, and report a required model that is unavailable instead of substituting. Brief the implementer with the request, the files and recommendations to act on, how to build and run the project, and the checks to run afterward. It returns the changed files, a short description of each change, and the output of each check. The final report states the implementer's model and why.
 
 ## Supported projects
 
@@ -65,7 +87,7 @@ The coordinator and all delegates may run only these read-only Git commands:
 
 Arguments that only filter or format the output are allowed, such as paths, commit ranges, `--stat`, `--oneline`, `-p`, and `-n`. Never use `--output` or any option that writes files.
 
-Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. Make all changes by editing workspace files directly.
+Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. The implementer makes all code changes by editing workspace files directly.
 
 ## Running the council
 
@@ -88,6 +110,6 @@ Rounds: 2
 
 Adjust the rounds, scores, and table columns to match the actual reviews. If a delegate gives no score, write `no score`. Do not invent one.
 
-If you agree with their recommendations, make the changes and request a fresh review after. Continue this process until both delegates are satisfied with the outcome.
+If you agree with their recommendations, send the accepted ones to the implementer and request a fresh review after the implementer returns. Continue this process until both delegates are satisfied with the outcome.
 
 Do not let repeated reviews result in scope creep. It is your job to fight to keep scope limited.

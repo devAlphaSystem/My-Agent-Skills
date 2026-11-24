@@ -1,6 +1,6 @@
 ---
 name: ui-consistency
-description: Preserve a project's existing interface conventions across any UI change, including shared components, visual foundations, page composition, states, and interactions. Discover and reuse the patterns relevant to the task, even when this skill does not name them, and record them in UI.md. Light level for interface work without extra delegates or a browser. Full level when the user says 'ui-consistency' with a task, alone or with squad, adding code and visual reviews. Mapping when the user says 'ui-consistency' with no task or asks to map the project's interface patterns.
+description: Preserve a project's existing interface conventions across any UI change, including shared components, visual foundations, page composition, states, and interactions. Discover and reuse the patterns relevant to the task, even when this skill does not name them, and record them in UI.md. Light level for interface work without reviewers or a browser. Full level when the user says 'ui-consistency' with a task, alone or with squad, adding code and visual reviews. Mapping when the user says 'ui-consistency' with no task or asks to map the project's interface patterns.
 ---
 
 # UI consistency
@@ -9,7 +9,7 @@ Use this skill so that a new or changed interface looks and behaves like the res
 
 The skill works at three levels.
 
-- Applying, light covers any task that builds or changes interface when the user did not say 'ui-consistency'. The agent does the discovery, the decisions, the checks, and the recording in `UI.md` itself, in steps 1 to 5 and 7 under "Applying the patterns". It adds no delegates and opens no browser or device session. With squad, squad's own researcher, planner, and implementer do their usual parts. It creates `UI.md` when the file does not exist. The agent may select this level on its own.
+- Applying, light covers any task that builds or changes interface when the user did not say 'ui-consistency'. The agent does the discovery, the decisions, the checks, and the recording in `UI.md` itself, in steps 1, 2, 4, 5, and 7 under "Applying the patterns". It never writes or edits code: without squad, an implementer delegate carries out step 3. It adds no reviewers and opens no browser or device session. With squad, squad's own researcher, planner, and implementer do their usual parts. It creates `UI.md` when the file does not exist. The agent may select this level on its own.
 - Applying, full runs when the user says 'ui-consistency' with a task, alone or with squad. It adds step 6, where two reviewers check the result. One reads the code. The other compares the running surface with the reference through platform-appropriate evidence. Saying 'ui-consistency' authorizes the local app and the matching browser or device checks, within the rules under "Running the app and inspecting the interface".
 - Mapping studies the project and saves the patterns in `UI.md` at the workspace root. It runs when the user says 'ui-consistency' with no task, explicitly requests project-wide mapping, or accepts the offer under "Starting a run". A task that updates a specific pattern stays focused on that pattern. Never start a project-wide mapping merely because the file is missing.
 
@@ -108,6 +108,8 @@ With squad, the researcher reports the patterns for the task's needs, and the pl
 
 ### 3. Implement
 
+The coordinator does not write or edit code. With squad, squad's implementer carries out this step. Without squad, the coordinator starts an implementer delegate and briefs it with the request, the decision table, the reference pages, and the rules under "Evidence and decisions". The implementer returns the changed files and what changed in each.
+
 Follow the table for each affected element, composition, state, and interaction. Use the project's own way of loading scripts and styles and of passing data to the page. Reuse the established flow for the same kind of operation, including its applicable feedback and failure behavior. Do not add inline styles or one-off classes that replace shared tokens or fixed properties. Leave `UI.md` for step 5.
 
 ### 4. Check the work
@@ -156,7 +158,7 @@ The visual checker compares the running screen with the reference:
 
 Each reviewer returns a verdict, pass or fail, and each finding with the convention or usability, accessibility, or correctness requirement it violates, its reproduction context, and file/line or runtime evidence. Identify a sound existing implementation when one is available; otherwise describe the scoped root-cause correction where known, or state what remains unknown. Do not invent a replacement when the canonical implementation contains the defect. Also return what could not be checked and why. The visual checker adds the paths of screenshots and recordings.
 
-The coordinator reviews the findings, merges duplicates, and drops unsupported preferences or findings outside the task. A material usability, accessibility, or correctness failure in the requested flow remains a failed check even when the reference behaves identically. Label it inherited rather than new, but do not discard it solely for matching the reference. Defects confined to unrelated reference flows stay follow-ups. Record each dropped report's reason. Accepted findings go to the implementer for a scoped root-cause fix and affected-use checks, subject to existing permissions; a broader redesign needs authorization. Without squad the agent implements; with squad start an implementer run. An unfixed failure remains explicit when permission, runtime access, or the round limit prevents completion.
+The coordinator reviews the findings, merges duplicates, and drops unsupported preferences or findings outside the task. A material usability, accessibility, or correctness failure in the requested flow remains a failed check even when the reference behaves identically. Label it inherited rather than new, but do not discard it solely for matching the reference. Defects confined to unrelated reference flows stay follow-ups. Record each dropped report's reason. Accepted findings go to the implementer for a scoped root-cause fix and affected-use checks, subject to existing permissions; a broader redesign needs authorization. Without squad, start an implementer delegate for them, as in step 3; with squad, start an implementer run. The coordinator does not make the fix itself. An unfixed failure remains explicit when permission, runtime access, or the round limit prevents completion.
 
 Review rounds:
 
@@ -250,18 +252,23 @@ To guide future agents to `UI.md`, check whether the project's existing instruct
 
 ## Delegates
 
-The coordinator is the agent in the conversation, or squad's coordinator when squad runs the task. It briefs the delegates, filters their findings, writes `UI.md`, and reports back. In Mapping and at the full level, it does not map, or replace a reviewer, on its own. At the light level there are no delegates, and the agent does the discovery, the decisions, the checks, and the recording itself. Without squad, the agent also does the implementation, as in council. With squad, the squad roles do the research, the plan, and the implementation.
+The coordinator is the agent in the conversation, or squad's coordinator when squad runs the task. It briefs the delegates, filters their findings, writes `UI.md`, and reports back. In Mapping and at the full level, it does not map, or replace a reviewer, on its own. At the light level there are no reviewers, and the agent does the discovery, the decisions, the checks, and the recording itself. The coordinator never creates or edits code. Without squad, an implementer delegate does the implementation and every later fix. With squad, the squad roles do the research, the plan, and the implementation.
 
 Use these exact models and reasoning efforts:
 
-| Role           | Model                   | Used in                          |
-| -------------- | ----------------------- | -------------------------------- |
-| Mapper         | GPT 6.2 Sol xhigh       | Mapping                          |
-| Verifier       | Claude Sonnet 5.5 high  | Mapping                          |
-| Code reviewer  | GPT 6.2 Sol xhigh       | Applying, full level             |
-| Visual checker | Claude Sonnet 5.5 xhigh | Mapping and applying, full level |
+| Role           | Model                                                                       | Used in                              |
+| -------------- | --------------------------------------------------------------------------- | ------------------------------------ |
+| Mapper         | GPT 6.2 Sol xhigh                                                           | Mapping                              |
+| Verifier       | Claude Sonnet 5.5 high                                                      | Mapping                              |
+| Code reviewer  | GPT 6.2 Sol xhigh                                                           | Applying, full level                 |
+| Visual checker | Claude Sonnet 5.5 xhigh                                                     | Mapping and applying, full level     |
+| Implementer    | Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh for high complexity tasks | Applying, every level, without squad |
 
-Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+An interface task is high complexity when at least one of these applies: it is open-ended or needs design decisions that the discovery did not settle, it spans several modules or layers, or a mistake would be costly or hard to undo, such as a change to auth, security, payments, or stored data. Otherwise, it is normal complexity. The coordinator rates the task and starts the implementer on Claude Opus 5.5 xhigh for high complexity, and on Claude Sonnet 5.5 xhigh otherwise. The final report states the model used and why.
+
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that role on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
@@ -339,7 +346,7 @@ While delegates run, the coordinator and all delegates may run only these read-o
 
 Arguments that only filter or format the output are allowed, such as paths, commit ranges, `--stat`, `--oneline`, `-p`, and `-n`. Never use `--output` or any option that writes files. The checks in step 4, including at the light level, use only these read-only commands, and only when the project is a Git repository.
 
-Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. Make all changes by editing workspace files directly.
+Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. The implementer makes all code changes by editing workspace files directly. The coordinator edits only `UI.md` and, with the user's approval, the one pointer line.
 
 ## Scope
 

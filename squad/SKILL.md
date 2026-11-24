@@ -11,6 +11,8 @@ Use this skill when the user asks for a fix, addition, change, or removal in the
 
 The coordinator is the agent in the conversation. It talks to the user, briefs each delegate, passes results between them, and reports back. The coordinator does not research, plan, or implement on its own, except for small clarifications needed to write a brief.
 
+The coordinator never creates or edits code, however small the change: no one-line fix, configuration value, script, or test. It orchestrates, guides, and briefs. Every code change goes to the implementer, and a later request in the same conversation that touches code goes to an implementer with a brief that carries all the context it needs.
+
 Use these exact models and reasoning efforts:
 
 | Role        | Model                                                                       |
@@ -29,7 +31,9 @@ Otherwise, it is normal complexity.
 
 After the research, the coordinator rates the task with these criteria and starts the planner on Claude Opus 5.5 xhigh for high complexity, and on Claude Sonnet 5.5 xhigh otherwise. The planner rates the implementation with the same criteria (see the plan contents below). The coordinator starts the implementer on Claude Opus 5.5 xhigh when either rating is high complexity, and on Claude Sonnet 5.5 xhigh otherwise. These are the only model choices the coordinator makes, and the final report states each model used and why.
 
-Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that role on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
@@ -127,7 +131,7 @@ The coordinator and all delegates may run only these read-only Git commands:
 
 Arguments that only filter or format the output are allowed, such as paths, commit ranges, `--stat`, `--oneline`, `-p`, and `-n`. Never use `--output` or any option that writes files.
 
-Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. Make all changes by editing workspace files directly.
+Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. The implementer makes all code changes by editing workspace files directly.
 
 ## Scope
 

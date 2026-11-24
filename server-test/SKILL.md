@@ -15,18 +15,21 @@ A run can take hours and start many delegates. Invoking this skill is the explic
 
 ## Roles
 
-The coordinator is the agent in the conversation. It talks to the user, prepares and stops the environment, owns every process the run starts, keeps the ledger, starts each delegate, and reports back. The coordinator does not test on its own and does not edit source files.
+The coordinator is the agent in the conversation. It talks to the user, prepares and stops the environment, owns every process the run starts, keeps the ledger, starts each delegate, and reports back. The coordinator does not test on its own and does not edit source files. It never creates or edits code, including the stand-in servers and any helper script: it orchestrates, guides, and briefs, and the builder writes that code. It still runs commands, such as starting the processes, the disposable database, and the project's own commands.
 
 Use these exact models and reasoning efforts:
 
 | Role       | Model                   |
 | ---------- | ----------------------- |
 | Mapper     | GPT 6.2 Sol xhigh       |
+| Builder    | Claude Sonnet 5.5 xhigh |
 | Tester     | Claude Sonnet 5.5 xhigh |
 | Rechecker  | Claude Sonnet 5.5 high  |
 | Aggregator | GPT 6.2 Sol xhigh       |
 
-Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that role on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh and knows only its prompt. Start every delegate with the prompt for its role from the Prompts section, and never with a brief the coordinator wrote.
 
@@ -92,8 +95,8 @@ Apply the project's own migrations or schema command to the disposable database,
 
 Give each external service in the map a local stand-in:
 
-- A stand-in is a small HTTP server that the coordinator writes in the tools directory. It records every request it receives in a file and answers by a mode that it reads from a file before each request: `ok`, `error`, `slow`, or `down`. It starts in `ok`.
-- Email goes to a local mail catcher, downloaded as a portable binary, or to a stand-in that writes each message to a file.
+- A stand-in is a small HTTP server that the builder writes in the tools directory. It records every request it receives in a file and answers by a mode that it reads from a file before each request: `ok`, `error`, `slow`, or `down`. It starts in `ok`. Start the builder with the Builder prompt, once for all the stand-ins, and read its summary. Then start each stand-in as a process of the run, and check that it records a request and follows its mode file.
+- Email goes to a local mail catcher, downloaded as a portable binary, or to a stand-in that the builder writes, which writes each message to a file.
 - Point each service's address variable to its stand-in, and give its keys and secrets invented values. Secrets the system needs to start, such as a session or signing key, also get invented values. Never reuse a value from the project's configuration.
 - When the system calls a service at an address that can't be changed, mark the units that call it skipped, and tell the testers in their units not to trigger them. The run never causes a payment, a message, an email, or any other effect outside the computer.
 
@@ -204,30 +207,31 @@ What is particular to a run goes into the fields. If a prompt does not fit a cas
 
 ### Fields
 
-| Field             | Value                                                                                                                                                                                                                                |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `<PROJECT_DIR>`   | The absolute path of the project                                                                                                                                                                                                     |
-| `<RUN_DIR>`       | The absolute path of the run directory                                                                                                                                                                                               |
-| `<TOOLS_DIR>`     | The absolute path of the tools directory, and for a tester its own subdirectory, such as `<TOOLS_DIR>/T07/`                                                                                                                          |
-| `<HINTS>`         | What the user said about the project and the exclusions, in the user's words, or `none`                                                                                                                                              |
-| `<ADDRESS>`       | The local address of the running system                                                                                                                                                                                              |
-| `<PROCESSES>`     | The processes the run started, with their names, process ids, ports, and log files under `logs/`                                                                                                                                     |
-| `<DATABASE>`      | The engine and version of the disposable database, and how to read it: the address or file and the command or tool to query it. No secret of the configured database.                                                                |
-| `<STAND_INS>`     | For each external service: the name, the address of its stand-in, the file where it records requests, and the path of its mode file. The address of the mail catcher and where to read its messages. Or `none`.                      |
-| `<ACCOUNTS>`      | The test accounts by role, as account A and account B of each role, with their identifiers and invented passwords                                                                                                                    |
-| `<VARIABLES>`     | The environment variables that point the project's commands to the disposable database and the stand-ins, by name and value. Only invented values and local addresses.                                                               |
-| `<ID>`            | The tester ID, such as `T07`, numbered in the order the testers start                                                                                                                                                                |
-| `<PASS>`          | The name of the pass                                                                                                                                                                                                                 |
-| `<PASS_CHECKS>`   | The text after the name of the pass in the Passes section                                                                                                                                                                            |
-| `<UNITS>`         | The entries of the batch's units, copied from `map.md`, with the ledger ID of each. For Baseline: `the whole project`. For a unit marked skipped because it calls a service at a fixed address, the line `Do not trigger this unit.` |
-| `<ALONE>`         | `Other testers are working on the system at the same time, with their own records.` or `You have the system to yourself.`                                                                                                            |
-| `<FINDINGS_PATH>` | `<RUN_DIR>/findings/<ID>-<pass>.md`, such as `findings/T07-access.md`                                                                                                                                                                |
-| `<EVIDENCE_DIR>`  | `<RUN_DIR>/evidence/<ID>/` for a tester, and `<RUN_DIR>/evidence/recheck/` for a rechecker                                                                                                                                           |
-| `<FINDING_ID>`    | The ID of the finding to recheck                                                                                                                                                                                                     |
-| `<FINDING>`       | That finding, copied from `report.md` from its ID to its last field                                                                                                                                                                  |
-| `<SOURCES>`       | `every file in <RUN_DIR>/findings/`, or a list of findings files for a part report, or `the part reports in <RUN_DIR>/report-parts/`                                                                                                 |
-| `<OUTPUT>`        | `<RUN_DIR>/report.md`, or `<RUN_DIR>/report-parts/<number>.md` for a part report                                                                                                                                                     |
-| `<PACKAGE>`       | The ID of a work package, such as `P01`, in the fix brief of step 9                                                                                                                                                                  |
+| Field             | Value                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<PROJECT_DIR>`   | The absolute path of the project                                                                                                                                                                                                                                                                                        |
+| `<RUN_DIR>`       | The absolute path of the run directory                                                                                                                                                                                                                                                                                  |
+| `<TOOLS_DIR>`     | The absolute path of the tools directory, and for a tester its own subdirectory, such as `<TOOLS_DIR>/T07/`                                                                                                                                                                                                             |
+| `<HINTS>`         | What the user said about the project and the exclusions, in the user's words, or `none`                                                                                                                                                                                                                                 |
+| `<ADDRESS>`       | The local address of the running system                                                                                                                                                                                                                                                                                 |
+| `<PROCESSES>`     | The processes the run started, with their names, process ids, ports, and log files under `logs/`                                                                                                                                                                                                                        |
+| `<DATABASE>`      | The engine and version of the disposable database, and how to read it: the address or file and the command or tool to query it. No secret of the configured database.                                                                                                                                                   |
+| `<STAND_INS>`     | For each external service: the name, the address of its stand-in, the file where it records requests, and the path of its mode file. The address of the mail catcher and where to read its messages. Or `none`.                                                                                                         |
+| `<ACCOUNTS>`      | The test accounts by role, as account A and account B of each role, with their identifiers and invented passwords                                                                                                                                                                                                       |
+| `<VARIABLES>`     | The environment variables that point the project's commands to the disposable database and the stand-ins, by name and value. Only invented values and local addresses.                                                                                                                                                  |
+| `<SERVICES>`      | For each service that needs a stand-in, copied from `map.md`: the name, the units that call it, the requests the system sends it, the responses it expects, the free local port the coordinator chose, and the paths of the request record and the mode file. Include the email stand-in when there is no mail catcher. |
+| `<ID>`            | The tester ID, such as `T07`, numbered in the order the testers start                                                                                                                                                                                                                                                   |
+| `<PASS>`          | The name of the pass                                                                                                                                                                                                                                                                                                    |
+| `<PASS_CHECKS>`   | The text after the name of the pass in the Passes section                                                                                                                                                                                                                                                               |
+| `<UNITS>`         | The entries of the batch's units, copied from `map.md`, with the ledger ID of each. For Baseline: `the whole project`. For a unit marked skipped because it calls a service at a fixed address, the line `Do not trigger this unit.`                                                                                    |
+| `<ALONE>`         | `Other testers are working on the system at the same time, with their own records.` or `You have the system to yourself.`                                                                                                                                                                                               |
+| `<FINDINGS_PATH>` | `<RUN_DIR>/findings/<ID>-<pass>.md`, such as `findings/T07-access.md`                                                                                                                                                                                                                                                   |
+| `<EVIDENCE_DIR>`  | `<RUN_DIR>/evidence/<ID>/` for a tester, and `<RUN_DIR>/evidence/recheck/` for a rechecker                                                                                                                                                                                                                              |
+| `<FINDING_ID>`    | The ID of the finding to recheck                                                                                                                                                                                                                                                                                        |
+| `<FINDING>`       | That finding, copied from `report.md` from its ID to its last field                                                                                                                                                                                                                                                     |
+| `<SOURCES>`       | `every file in <RUN_DIR>/findings/`, or a list of findings files for a part report, or `the part reports in <RUN_DIR>/report-parts/`                                                                                                                                                                                    |
+| `<OUTPUT>`        | `<RUN_DIR>/report.md`, or `<RUN_DIR>/report-parts/<number>.md` for a part report                                                                                                                                                                                                                                        |
+| `<PACKAGE>`       | The ID of a work package, such as `P01`, in the fix brief of step 9                                                                                                                                                                                                                                                     |
 
 ### Mapper prompt
 
@@ -270,6 +274,43 @@ Read the project and write <RUN_DIR>/map.md. Do not start the system, do not con
 ## When you finish
 
 Return a short summary: the path of the map, the stack, the database engine and version and how it can be pointed elsewhere, the number of units by kind, the external services and whether each address can be changed, the processes to start, and what you could not determine.
+```
+
+### Builder prompt
+
+```text
+You are the builder of a server-test run. The run tests the server side of a web project on a disposable database. The system calls external services, and the run replaces each one with a local stand-in so that nothing reaches a real service. You write the stand-ins. You write code only for them, and nothing you start stays running.
+
+Project: <PROJECT_DIR>
+Tools directory: <TOOLS_DIR>
+
+## The services
+
+<SERVICES>
+
+## What to build
+
+For each service, one small HTTP server in <TOOLS_DIR>, in the language and runtime the project already uses when it has one, and with no dependency to install otherwise:
+
+- It listens on its port, bound to localhost only.
+- It records every request it receives in its request record file, one entry for each request, with the time, the method, the path, the headers, and the body. It replaces any value that looks like a token, key, or password with a description.
+- Before each request it reads its mode file and answers by the mode: `ok` answers as the real service would, with the responses the system expects; `error` answers with a server error status; `slow` waits a long time, such as thirty seconds, before it answers as in `ok`; `down` closes the connection without an answer. A missing or empty mode file means `ok`.
+- It writes the mode file with `ok` when it starts.
+- It starts with one command that you write down, takes no secret, and uses only invented values.
+
+Take what the stand-ins must answer from the requests and responses the services list, and from the project's code and tests. Read any source file of the project, but never read the values in `.env` files, secret files, or credentials, and never edit a project file. You may run these read-only Git commands, with arguments that only filter or format the output: `git --no-pager --no-optional-locks status`, `git --no-pager diff --no-ext-diff --no-textconv`, `git --no-pager show --no-ext-diff --no-textconv`, and `git --no-pager log`. Run no other Git command.
+
+## Ground rules
+
+- Write only in <TOOLS_DIR>.
+- Start each stand-in only long enough to test it by hand with local requests, and stop it before you return. Never start, stop, or restart the system, its workers, or the database.
+- Send requests only to the stand-ins you write. Never send a request to an outside service, and install nothing outside <TOOLS_DIR>.
+- Never write a password, a token, a cookie, or a secret in a file or in your reply.
+- If a response the system expects is unclear, write the best reading in the summary and say what you could not determine.
+
+## When you finish
+
+Return a short summary: for each stand-in, the path of its code, the command that starts it, its port, the paths of its request record and mode file, the responses it gives in `ok`, and what you could not determine.
 ```
 
 ### Tester prompt
@@ -514,7 +555,7 @@ The severities:
 
 ## Delegate permissions
 
-The prompts carry the delegates' permissions, and the coordinator grants nothing beyond them. The mapper reads the project and writes only `map.md`. The testers and the rechecker read the project, call the system the coordinator started, read the disposable database, and write only their findings file, their evidence directory, and their tools directory. The aggregator reads the run directory and the project and writes only its report file. No delegate edits a project file, connects to any database but the disposable one, starts or stops a long-running process, installs anything outside its tools directory, or causes an effect outside the computer.
+The prompts carry the delegates' permissions, and the coordinator grants nothing beyond them. The mapper reads the project and writes only `map.md`. The builder reads the project and writes only the stand-ins in its tools directory. The testers and the rechecker read the project, call the system the coordinator started, read the disposable database, and write only their findings file, their evidence directory, and their tools directory. The aggregator reads the run directory and the project and writes only its report file. No delegate edits a project file, connects to any database but the disposable one, starts or stops a long-running process, installs anything outside its tools directory, or causes an effect outside the computer.
 
 ## Git restriction
 

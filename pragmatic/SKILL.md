@@ -9,13 +9,15 @@ Deliver a correct, maintainable solution with performance that meets the request
 
 ## Override
 
-Use this skill on its own or alongside squad, council, qa, debug, or another software workflow. It takes precedence over other skills for optional performance work, speculative scale and compatibility requirements, and classifying, deferring, and ending review cycles on rare, low-impact defects as described below. Explicit user requirements, documented scale and support commitments, security, and required checks still apply. Keep correctness issues visible when deferred. Preserve the other workflow's roles, models, permissions, and required delegates. This skill starts no additional workflow or delegate.
+Use this skill on its own or alongside squad, council, qa, debug, or another software workflow. It takes precedence over other skills for optional performance work, speculative scale and compatibility requirements, and classifying, deferring, and ending review cycles on rare, low-impact defects as described below. Explicit user requirements, documented scale and support commitments, security, and required checks still apply. Keep correctness issues visible when deferred. Preserve the other workflow's roles, models, permissions, and required delegates. This skill starts no additional workflow and no delegate of its own.
+
+The coordinator never creates or edits code, with or without another workflow. Code the work needs goes to the role of that workflow that edits code, such as the implementer or the fixer. When this skill is used alone, the coordinator starts one implementer delegate for it, on Claude Sonnet 5.5 xhigh, or Claude Opus 5.5 xhigh when the work is open-ended, spans several modules or layers, or a mistake would be costly or hard to undo, such as a change to auth, security, payments, or stored data. Brief it with these rules. In T3 Code, resolve the model with `orchestrator_capabilities` and start it with `delegate_task`.
 
 The coordinator includes these rules in each relevant delegate brief and judges the combined effort across agents and rounds. Starting a new stage or delegate does not justify repeating an exhausted line of investigation.
 
 ## Performance expectations
 
-Inspect the affected code and apply clear, low-cost improvements within the assigned role and task scope. Reuse the existing design and fix the actual cause of a performance problem. Reviewers and testers report opportunities; the role authorized to edit code applies accepted changes.
+Inspect the affected code and apply clear, low-cost improvements within the assigned role and task scope. Reuse the existing design and fix the actual cause of a performance problem. Reviewers and testers report opportunities; the role that edits code, such as the implementer or the fixer, applies accepted changes, never the coordinator.
 
 Treat an expected gain of 1% to 5% as marginal by default. Consider absolute latency, throughput, memory, operating cost, and workload before judging its value. A percentage alone does not establish a meaningful benefit. A small performance tradeoff is acceptable when actual use and all requirements still allow it. Explain the tradeoff and the available evidence. Never present an estimate as a measurement.
 

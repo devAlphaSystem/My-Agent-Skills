@@ -9,7 +9,7 @@ Use this skill to map a project and save the result in `PROJECT.md` at the works
 
 ## Roles
 
-The coordinator is the agent in the conversation. It briefs each delegate, merges their results, writes `PROJECT.md`, and reports to the user. The coordinator does not map the project on its own, except for small clarifications needed to write a brief.
+The coordinator is the agent in the conversation. It briefs each delegate, merges their results, writes `PROJECT.md`, and reports to the user. The coordinator does not map the project on its own, except for small clarifications needed to write a brief. It never creates or edits code, and the only file it writes is `PROJECT.md`.
 
 Use these exact models and reasoning efforts:
 
@@ -18,7 +18,9 @@ Use these exact models and reasoning efforts:
 | Mapper   | GPT 6.2 Sol xhigh      |
 | Verifier | Claude Sonnet 5.5 high |
 
-Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that role on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 

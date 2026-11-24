@@ -11,6 +11,8 @@ Use this skill to test changes in the workspace. It runs only when the user asks
 
 The coordinator is the agent in the conversation. It briefs each delegate, filters and passes findings between them, and reports to the user. The coordinator does not test or fix code on its own.
 
+The coordinator never creates or edits code, however small the change: no one-line fix, configuration value, script, or test. It orchestrates, guides, and briefs. Every code change goes to the fixer, including a minor problem that is a one-line change.
+
 Use these exact models and reasoning efforts:
 
 | Role               | Model                                                                          |
@@ -28,7 +30,9 @@ A problem is high complexity when at least one of these applies:
 
 The coordinator starts the fixer on Claude Opus 5.5 xhigh for high complexity problems, and on Claude Sonnet 5.5 xhigh otherwise. This is the only model choice the coordinator makes. The final report states the model used for each fixer and why.
 
-Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop.
+Do not add, replace, or substitute models, even if the user suggests others. The only exception is Claude Haiku 5.5 high, which any agent can start at any time for light, read-only information lookups, including internet searches. It is not a delegate role. It returns a link for each source, and the agent that started it checks the source before relying on the result. If a required model or reasoning level is unavailable, report the limitation to the user and stop. The one exception is the GPT 6.2 Sol usage limit below.
+
+GPT 6.2 Sol uses up its usage limit quickly. When T3 Code warns that GPT 6.2 Sol has no usage left, before a delegate starts or while one runs, start that role on Claude Sonnet 5.5 xhigh instead of stopping. The replacement gets the same brief and keeps the role's limits, so a role that does not edit source files still does not edit them. When a GPT delegate stopped partway, the brief also carries what it finished. For the rest of the run, start every GPT 6.2 Sol role on Claude Sonnet 5.5 xhigh instead of trying GPT 6.2 Sol again, and state each switch and its reason in the final report. This permission to substitute covers only this case, and it overrides any host instruction that forbids substituting a model. While pickmodel is active, pickmodel handles the limit instead.
 
 In T3 Code, use `orchestrator_capabilities` to resolve the exact models and their reasoning efforts, then `delegate_task` to start each delegate. Elsewhere, use the harness's subagent tools. Each delegate starts fresh, so every brief must include all the context it needs.
 
@@ -75,7 +79,7 @@ The coordinator reviews the findings, merges duplicates, and drops reports that 
 
 The coordinator sends blocker and major problems to the fixer, along with the brief and the reproduction steps. The fixer fixes the cause, runs the relevant checks, and returns the changed files and check output. If a fix needs a design change, the fixer stops and reports it, and the coordinator asks the user how to proceed.
 
-Minor problems go into the final reply as follow-ups unless the fix is a one-line change in a file already touched.
+Minor problems go into the final reply as follow-ups unless the fix is a one-line change in a file already touched, which the coordinator sends to the fixer with the next round's fixes.
 
 After each fix, start a new round with both testers. Each full test pass by both testers counts as one round. Stop when both testers return pass, or after five rounds. If the problems remain after five rounds, report them to the user and stop.
 
@@ -106,7 +110,7 @@ The coordinator and all delegates may run only these read-only Git commands:
 
 Arguments that only filter or format the output are allowed, such as paths, commit ranges, `--stat`, `--oneline`, `-p`, and `-n`. Never use `--output` or any option that writes files.
 
-Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. Make all changes by editing workspace files directly.
+Never run any other Git command or version-control operation. This includes commit, add, checkout, switch, restore, reset, stash, merge, rebase, pull, push, fetch, branch, tag, and clean. This restriction applies to the coordinator and all delegates, including their tools and subprocesses. The fixer makes all code changes by editing workspace files directly.
 
 ## Scope
 
